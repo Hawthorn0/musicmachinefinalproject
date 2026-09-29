@@ -1,21 +1,17 @@
 // FRONT-END (CLIENT) JAVASCRIPT HERE
-// const {Howl, Howler} = require('howler'),
-//       Matter = require('matter-js'),
-//       { Engine, Render, Runner, Bodies, Composite } = Matter
 
 
 import { Howl } from 'https://cdn.jsdelivr.net/npm/howler@2.2.4/+esm';
+import Matter from 'https://cdn.jsdelivr.net/npm/matter-js@0.20.0/+esm'
 
-// let Engine = Matter.Engine,
-//     Render = Matter.Render,
-//     Runner = Matter.Runner,
-//     Bodies = Matter.Bodies,
-//     Composite = Matter.Composite;
+let Engine = Matter.Engine,
+    Render = Matter.Render,
+    Runner = Matter.Runner,
+    Bodies = Matter.Bodies,
+    Composite = Matter.Composite;
 
 let engine
 let render
-let boxA
-let boxB
 let ground
 let runner
 
@@ -50,16 +46,25 @@ const makePhysics = function() {
     engine: engine
   });
   
-  boxA = Bodies.rectangle(400, 200, 80, 80);
-  boxB = Bodies.rectangle(450, 50, 80, 80);
+  // boxA = Bodies.rectangle(400, 200, 80, 80);
+  // boxB = Bodies.rectangle(450, 50, 80, 80);
+  addBlock(400, 200, 80, 80)
+  addBlock(450, 50, 80, 80)
   ground = Bodies.rectangle(400, 610, 810, 60, { isStatic: true });
 
   // adds everything to the world
-  Composite.add(engine.world, [boxA, boxB, ground]);
+  Composite.add(engine.world, [ground]);
   
   Render.run(render);
   runner = Runner.create();
   Runner.run(runner, engine);
+
+  addBlock(500, 300, 60, 60)
+}
+
+const addBlock = function(x, y, width, height) {
+  let block = Bodies.rectangle(x, y, width, height)
+  Composite.add(engine.world, [block]);
 }
 
 
@@ -72,7 +77,7 @@ const loop = function() {
 
 window.onload = function() {
   console.log("Started")
-  // makePhysics()
+  makePhysics()
 
   playNote(0, 0, 1)
 
