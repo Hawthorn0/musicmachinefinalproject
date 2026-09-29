@@ -1,8 +1,26 @@
-const {Howl, Howler} = require('howler');
 // FRONT-END (CLIENT) JAVASCRIPT HERE
+// const {Howl, Howler} = require('howler'),
+//       Matter = require('matter-js'),
+//       { Engine, Render, Runner, Bodies, Composite } = Matter
 
 
-message = function(what) {
+import { Howl } from 'https://cdn.jsdelivr.net/npm/howler@2.2.4/+esm';
+
+// let Engine = Matter.Engine,
+//     Render = Matter.Render,
+//     Runner = Matter.Runner,
+//     Bodies = Matter.Bodies,
+//     Composite = Matter.Composite;
+
+let engine
+let render
+let boxA
+let boxB
+let ground
+let runner
+
+
+const message = function(what) {
   const json = { message: what}
 
   fetch( '/debug', {
@@ -24,17 +42,39 @@ const playNote = function(intrumentID, noteID, volume) {
 }
 
 
+const makePhysics = function() {
+  engine = Engine.create();
+
+  render = Render.create({
+    element: document.body,
+    engine: engine
+  });
+  
+  boxA = Bodies.rectangle(400, 200, 80, 80);
+  boxB = Bodies.rectangle(450, 50, 80, 80);
+  ground = Bodies.rectangle(400, 610, 810, 60, { isStatic: true });
+
+  // adds everything to the world
+  Composite.add(engine.world, [boxA, boxB, ground]);
+  
+  Render.run(render);
+  runner = Runner.create();
+  Runner.run(runner, engine);
+}
+
+
 // loops before every browser repaint
-loop = function() {
+const loop = function() {
   console.log("start")
   // temporal recursion, call tthe function in the future
   window.requestAnimationFrame( draw )
-
-  
 }
 
 window.onload = function() {
   console.log("Started")
+  // makePhysics()
+
+  playNote(0, 0, 1)
 
 
 }

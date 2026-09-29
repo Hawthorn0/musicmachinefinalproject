@@ -12,6 +12,7 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "howler": "^2.2.4",
+    "matter-js": "^0.20.0",
     "mime": "^2.6.0"
   },
   "engines": {
