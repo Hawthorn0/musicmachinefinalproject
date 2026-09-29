@@ -1,0 +1,21 @@
+* {
+    font-family: "Grandstander", sans-serif;
+}
+
+body {
+    justify-content: center;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+h1, h2, h3 {
+    text-align: center;
+}
+
+p {
+    font-size: large;
+}
+
+a {
+    color: #3066e6;
+}
