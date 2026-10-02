@@ -9,6 +9,7 @@ let Engine = Matter.Engine,
         Runner = Matter.Runner,
         Composites = Matter.Composites,
         Common = Matter.Common,
+        Query = Matter.Query,
         MouseConstraint = Matter.MouseConstraint,
         Mouse = Matter.Mouse,
         Composite = Matter.Composite,
@@ -18,6 +19,11 @@ let Engine = Matter.Engine,
 let engine
 let render
 let runner
+
+
+// MAKE UI TOGGLE THIS
+let place = false
+let remove = false
 
 
 const message = function (what) {
@@ -56,6 +62,8 @@ const makePhysics = function () {
   addBlock(400, 500, 80, 80, "0_0")
   addBlock(450, 450, 80, 80, "0_2")
   addBlock(200, 500, 80, 80, "0_1")
+  addBlockTriangle(200, 300, 80, 80, "0_1")
+  addBlockCircle(400, 300, 80, 80, "0_0")
   addKillBox(400, 610, 810, 60)
 
   Render.run(render);
@@ -102,6 +110,20 @@ const makePhysics = function () {
   Events.on(mouseConstraint, 'mousedown', function (event) {
     let mousePosition = event.mouse.position;
     console.log('mousedown at ' + mousePosition.x + ' ' + mousePosition.y);
+
+    if (place == true) {
+      addBlock(mousePosition.x, mousePosition.y, 80, 80)
+    } else if (remove == true) {
+      let bodies = Query.point(Composite.allBodies(engine.world), mousePosition);
+      if (bodies.length != 0) {
+        Composite.remove(engine.world, bodies[0]);
+      }
+    } else {
+      let bodies = Query.point(Composite.allBodies(engine.world), mousePosition);
+      if (bodies.length != 0) {
+        // DO EDITING OF BODY HERE
+      }
+    }
   });
 
   Events.on(mouseConstraint, 'mouseup', function (event) {
@@ -125,6 +147,18 @@ const addEntity = function (x, y, radius) {
 
 const addBlock = function (x, y, width, height, tag) {
   let block = Bodies.rectangle(x, y, width, height, { label: tag, isStatic: true })
+  block.collisionFilter = { category: 1, mask: 1, group: 0 };
+  Composite.add(engine.world, [block]);
+}
+
+const addBlockCircle = function (x, y, radius, tag) {
+  let block = Bodies.circle(x, y, radius, { label: tag, isStatic: true })
+  block.collisionFilter = { category: 1, mask: 1, group: 0 };
+  Composite.add(engine.world, [block]);
+}
+
+const addBlockTriangle = function (x, y, width, height, tag) {
+  let block = Bodies.polygon(x, y, width, height, { label: tag, isStatic: true })
   block.collisionFilter = { category: 1, mask: 1, group: 0 };
   Composite.add(engine.world, [block]);
 }

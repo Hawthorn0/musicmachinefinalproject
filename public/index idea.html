@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Build a musical machine with shapes and bouncing balls.">
+  <title>Music Machine</title>
+  <link rel="stylesheet" href="css/main.css">
+  <script type="module" src="js/main.js"></script>
+  <script src="js/ui.js" defer></script>
+</head>
+<body>
+  <main class="app-shell">
+    <header class="toolbar" aria-label="Machine controls">
+      <h1>Music Machine</h1>
+      <div class="playback-controls">
+        <label for="bpm">BPM</label>
+        <input id="bpm" name="bpm" type="number" min="30" max="240" value="120">
+        <button id="play-button" type="button">Play</button>
+        <button id="pause-button" type="button">Pause</button>
+        <button id="reset-button" type="button">Reset</button>
+      </div>
+    </header>
+
+    <div class="workspace">
+      <aside class="toolkit" aria-labelledby="toolkit-title">
+        <h2 id="toolkit-title">Add objects</h2>
+        <p>Choose an object, then place it on the canvas.</p>
+        <div class="tool-list">
+          <button type="button" data-tool="circle">Circle</button>
+          <button type="button" data-tool="rectangle">Rectangle</button>
+          <button type="button" data-tool="triangle">Triangle</button>
+          <button type="button" data-tool="spawner">Spawner</button>
+          <button type="button" data-tool="killbox">Killbox</button>
+        </div>
+      </aside>
+
+      <section class="canvas-area" aria-labelledby="canvas-title">
+        <h2 id="canvas-title">Canvas</h2>
+        <div class="canvas-surface">
+          <canvas id="machine-canvas" aria-label="Music machine workspace"></canvas>
+          <p class="canvas-hint">Choose an object from the left to get started.</p>
+        </div>
+      </section>
+
+      <aside class="properties" aria-labelledby="properties-title">
+        <h2 id="properties-title">Properties</h2>
+        <p id="selection-hint">Select an object to edit it.</p>
+        <div id="property-controls" hidden></div>
+      </aside>
+    </div>
+  </main>
+</body>
+</html>
