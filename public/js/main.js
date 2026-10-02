@@ -25,6 +25,9 @@ let runner
 let place = false
 let remove = false
 
+let bpm = 120
+let tick = 0
+
 
 const message = function (what) {
   const json = { message: what }
@@ -62,32 +65,36 @@ const makePhysics = function () {
   addBlock(400, 500, 80, 80, "0_0")
   addBlock(450, 450, 80, 80, "0_2")
   addBlock(200, 500, 80, 80, "0_1")
-  addBlockTriangle(200, 300, 80, 80, "0_1")
-  addBlockCircle(400, 300, 80, 80, "0_0")
+  addBlockTriangle(200, 300, 50, 50, "0_1")
+  addBlockCircle(295, 350, 20, "0_0")
   addKillBox(400, 610, 810, 60)
+  addSpawner(300, 100, 20)
 
   Render.run(render);
   runner = Runner.create();
   Runner.run(runner, engine);
 
-  addEntity(500, 300, 30)
+  addEntity(300, 300, 30)
 
   //https://github.com/liabru/matter-js/blob/master/examples/events.js
 
   Events.on(engine, 'collisionStart', function (event) {
     let pairs = event.pairs;
 
-
     for (let i = 0; i < pairs.length; i++) {
       let pair = pairs[i];
-      if (pair.bodyA.label == "kill" && pair.bodyB.label != "kill") {
-        Composite.remove(engine.world, pair.bodyB);
-      } else if (pair.bodyA.label != "kill" && pair.bodyB.label == "kill") {
-        Composite.remove(engine.world, pair.bodyA);
-      } else if (pair.bodyA.label != "entity" || pair.bodyB.label == "entity") {
-        playNote(pair.bodyA.label, 1)
-      } else if (pair.bodyA.label == "entity" || pair.bodyB.label != "entity") {
-        playNote(pair.bodyB.label, 1)
+      if (pair.bodyA.label != "spawner" && pair.bodyB.label != "spawner") {
+        if (pair.bodyA.label == "kill" && pair.bodyB.label != "kill") {
+          Composite.remove(engine.world, pair.bodyB);
+        } else if (pair.bodyA.label != "kill" && pair.bodyB.label == "kill") {
+          Composite.remove(engine.world, pair.bodyA);
+        } else if (pair.bodyA.label == "entity" && pair.bodyB.label == "entity") {
+          // make a satisfying clunk or something idk
+        } else if (pair.bodyA.label != "entity" || pair.bodyB.label == "entity") {
+          playNote(pair.bodyA.label, 1)
+        } else if (pair.bodyA.label == "entity" || pair.bodyB.label != "entity") {
+          playNote(pair.bodyB.label, 1)
+        }
       }
     }
   });
@@ -140,6 +147,11 @@ const makePhysics = function () {
   });
 }
 
+const addSpawner = function (x, y, radius) {
+  let block = Bodies.circle(x, y, radius, { label: "spawner", isStatic: true, isSensor: true })
+  Composite.add(engine.world, [block]);
+}
+
 const addEntity = function (x, y, radius) {
   let block = Bodies.circle(x, y, radius, { label: "entity" })
   Composite.add(engine.world, [block]);
@@ -171,13 +183,26 @@ const addKillBox = function (x, y, width, height) {
 
 // loops before every browser repaint
 const loop = function () {
-  console.log("start")
   // temporal recursion, call tthe function in the future
-  window.requestAnimationFrame(draw)
+  window.requestAnimationFrame(loop)
+
+  tick++
+  if (tick > bpm) {
+    console.log(tick)
+    tick = 0
+
+    let bodies = Composite.allBodies(engine.world);
+    for (let i = 0; i < bodies.length; i++) {
+      if (bodies[i].label == "spawner") {
+        addEntity(bodies[i].position.x, bodies[i].position.y, 30)
+      }
+    }
+  }
 }
 
 window.onload = function () {
   console.log("Started")
   makePhysics()
+  loop()
 
 }
