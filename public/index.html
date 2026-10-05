@@ -2,23 +2,44 @@
 <html lang='en'>
 
 <head>
-  <title>CS4241 Assignment 4</title>
+  <title>Music Machine</title>
   <meta charset='utf-8'>
-  <meta name=description content="Shopping List">
   <script type="module" src='js/main.js'></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/picnic">
   <link rel='stylesheet' href='css/main.css'>
-
-  <!-- get rid of favicon error -->
-  <link rel='icon' href='data:;base64,iVBORw0KGgo='>
 </head>
 
 <body>
-  <main>
-    <div class="center">
-      <p>hi</p>
-    </div>
+    <header class="app-header">
+      <h1>Music Machine</h1>
+  </header>
+  <main class="workspace">
+    <aside class="shape-panel" aria-labelledby="shape-title">
+      <h2 id="shape-title">Tools</h2>
+
+      <button id ="select-tool" type="button" aria-pressed="true">Select</button>
+      <button type= "button" data-shape= "rectangle" aria-pressed="false"> Rectangle</button>
+      <button type= "button" data-shape="circle" aria-pressed="false">Circle </button>
+      <button type= "button" data-shape="triangle" aria-pressed="false">Triangle</button>
+      <button type = "button" data-shape= "spawner" aria-pressed="false"> Spawner</button>
+      <button type= "button" data-shape="killbox" aria-pressed="false">Kill box</button>
+    </aside>
+
+    <section class="canvas-panel" aria-label="Music machine canvas">
+      <div id="canvas-stage"></div>
+    </section>
+
+    <aside class="inspector" aria-labelledby="inspector-title">
+      <h2 id="inspector-title">Inspector</h2>
+      <p class="hint">Select something</p>
+
+      <dl>
+        <div><dt>Shape</dt><dd id="shape-value">—</dd></div>
+        <div><dt>Tone</dt><dd id="tone-value">—</dd></div>
+        <div><dt>Pitch</dt><dd id="pitch-value">—</dd></div>
+      </dl>
+    </aside>
   </main>
+
 </body>
 
 </html>

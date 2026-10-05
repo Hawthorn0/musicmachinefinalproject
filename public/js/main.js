@@ -55,7 +55,7 @@ const makePhysics = function () {
   engine = Engine.create();
 
   render = Render.create({
-    element: document.body,
+    element: document.querySelector('#canvas-stage'),
     engine: engine,
 
   });
