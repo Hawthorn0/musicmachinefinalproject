@@ -22,10 +22,8 @@ let runner
 
 
 // MAKE UI TOGGLE THIS
-let place = false
-let placeid = 0 // 0 is rectangle, 1 is triangle, 2 is square. 
-let remove = false
 let editBlock
+let activeTool = 'select';
 
 let bpm = 120
 let tick = 0
@@ -66,9 +64,9 @@ const makePhysics = function () {
   addBlock(400, 500, 80, 80, "0_0")
   addBlock(450, 450, 80, 80, "0_2")
   addBlock(200, 500, 80, 80, "0_1")
-  addBlockTriangle(200, 300, 50, "0_1")
+  addBlockTriangle(200, 300, 3, 50, "0_1")
   addBlockCircle(295, 350, 20, "0_0")
-  addKillBox(400, 610, 10000, 60)
+  addKillBox(400, 610, 810, 60)
   addSpawner(300, 100, 20)
 
   Render.run(render);
@@ -119,26 +117,28 @@ const makePhysics = function () {
     let mousePosition = event.mouse.position;
     console.log('mousedown at ' + mousePosition.x + ' ' + mousePosition.y);
 
-    if (place == true) {
-      if (placeid == 0) {
-        addBlock(mousePosition.x, mousePosition.y, 80, 80)
-      } else if (placeid == 1) {
-        addBlockTriangle(mousePosition.x, mousePosition.y, 80, 80)
-      } else if (placeid == 2) {
-        addBlockCircle(mousePosition.x, mousePosition.y, 80, 80)
-      }
-    } else if (remove == true) {
-      let bodies = Query.point(Composite.allBodies(engine.world), mousePosition);
-      if (bodies.length != 0) {
-        Composite.remove(engine.world, bodies[0]);
-      }
-    } else {
-      let bodies = Query.point(Composite.allBodies(engine.world), mousePosition);
-      if (bodies.length != 0) {
-        if (bodies[0].label != "spawner" || bodies[0].label != "entity" || bodies[0].label != "kill") {
-          editBlock = bodies[0]
+    if (activeTool === 'rectangle') {
+      addBlock(mousePosition.x, mousePosition.y, 80, 80, '0_0');
+    } else if (activeTool === 'circle') {
+      addBlockCircle(mousePosition.x, mousePosition.y, 20, '0_0');
+    } else if (activeTool === 'triangle') {
+      addBlockTriangle(mousePosition.x, mousePosition.y, 3, 50, '0_0');
+    } else if(activeTool === 'spawner'){
+      addSpawner(mousePosition.x, mousePosition.y, 20);
+    }else if(activeTool === 'killbox'){
+      addKillBox(mousePosition.x, mousePosition.y, 80, 40);
+    } else if(activeTool === 'select'){
+      var bodies = Query.point(Composite.allBodies(engine.world), mousePosition);
+      var selected = null;
+
+      for(var i=0; i<bodies.length; i++){
+        if (bodies[i].shapeType){
+          selected = bodies[i];
+          break;
         }
       }
+      editBlock = selected;
+      updateInspector(selected);
     }
   });
 
@@ -158,6 +158,7 @@ const makePhysics = function () {
 
 const addSpawner = function (x, y, radius) {
   let block = Bodies.circle(x, y, radius, { label: "spawner", isStatic: true, isSensor: true })
+  block.shapeType = 'spawner';
   Composite.add(engine.world, [block]);
 }
 
@@ -168,24 +169,28 @@ const addEntity = function (x, y, radius) {
 
 const addBlock = function (x, y, width, height, tag) {
   let block = Bodies.rectangle(x, y, width, height, { label: tag, isStatic: true })
+  block.shapeType = 'rectangle';
   block.collisionFilter = { category: 1, mask: 1, group: 0 };
   Composite.add(engine.world, [block]);
 }
 
 const addBlockCircle = function (x, y, radius, tag) {
   let block = Bodies.circle(x, y, radius, { label: tag, isStatic: true })
+  block.shapeType = 'circle';
   block.collisionFilter = { category: 1, mask: 1, group: 0 };
   Composite.add(engine.world, [block]);
 }
 
-const addBlockTriangle = function (x, y, radius, tag) {
-  let block = Bodies.polygon(x, y, 3, radius, { label: tag, isStatic: true, angle: 3.1415 / 2 })
+const addBlockTriangle = function (x, y, sides, radius, tag) {
+  let block = Bodies.polygon(x, y, sides, radius, { label: tag, isStatic: true, angle: Math.PI / 2 })
+  block.shapeType = 'triangle';
   block.collisionFilter = { category: 1, mask: 1, group: 0 };
   Composite.add(engine.world, [block]);
 }
 
 const addKillBox = function (x, y, width, height) {
   let block = Bodies.rectangle(x, y, width, height, { label: "kill", isStatic: true })
+  block.shapeType = 'killbox';
   Composite.add(engine.world, [block]);
 }
 
@@ -214,9 +219,50 @@ const loop = function () {
   }
 }
 
+function updateInspector(body) {
+  var instrumentValue = document.querySelector('#instrument-value');
+  var pitchValue = document.querySelector('#pitch-value');
+  var angleValue = document.querySelector('#angle-value');
+  var hint = document.querySelector('.inspector .hint');
+
+  instrumentValue.textContent = '—';
+  pitchValue.textContent = '—';
+  angleValue.textContent = '—';
+
+  if (body == null) {
+    hint.hidden = false;
+    return;
+  }
+
+  hint.hidden = true;
+  angleValue.textContent = Math.round(body.angle * 180 / Math.PI) + '°';
+
+  if (body.label.indexOf('_') != -1) {
+    var labelParts = body.label.split('_');
+    instrumentValue.textContent = labelParts[0];
+    pitchValue.textContent = labelParts[1];
+  }
+}
+
 window.onload = function () {
   console.log("Started")
+  var buttons = document.querySelectorAll('.shape-panel button');
+
+  for (var i = 0; i < buttons.length; i++){
+    buttons[i].addEventListener('click', function (){
+      activeTool = this.getAttribute('data-shape') || 'select';
+
+      for (var j=0; j< buttons.length; j++){
+        if (buttons[j]===this) {
+          buttons[j].setAttribute('aria-pressed', 'true');
+        } else {
+          buttons[j].setAttribute('aria-pressed', 'false');
+        }}
+    });
+  }
+
   makePhysics()
   loop()
+
 
 }

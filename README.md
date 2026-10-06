@@ -47,3 +47,9 @@ Think of 1,3, and 4 in particular in a similar vein to the design / tech achieve
 ## FAQs
 
 - **Can I use XYZ framework?** You can use any web-based frameworks or tools available, but for your server programming you need to use Node.js. Your client-side scripting language should be either JavaScript or TypeScript. While the course staff is happy to help with frameworks used in the class, we can't guarantee we'll be able to assist you with other frameworks / databases; choose carefully!
+
+
+## instrument - 0/1 (piano, trumpet)
+# pitch - 0-35 - editBlock.label = [instrumentID]_pitchID[] - wav file
+# angle - 0-360 editBlock.angle - (covert to radians)
+# change bpm
