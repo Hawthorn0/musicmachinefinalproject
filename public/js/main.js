@@ -23,7 +23,9 @@ let runner
 
 // MAKE UI TOGGLE THIS
 let place = false
+let placeid = 0 // 0 is rectangle, 1 is triangle, 2 is square. 
 let remove = false
+let editBlock
 
 let bpm = 120
 let tick = 0
@@ -57,7 +59,6 @@ const makePhysics = function () {
   render = Render.create({
     element: document.querySelector('#canvas-stage'),
     engine: engine,
-
   });
 
   // boxA = Bodies.rectangle(400, 200, 80, 80);
@@ -65,9 +66,9 @@ const makePhysics = function () {
   addBlock(400, 500, 80, 80, "0_0")
   addBlock(450, 450, 80, 80, "0_2")
   addBlock(200, 500, 80, 80, "0_1")
-  addBlockTriangle(200, 300, 50, 50, "0_1")
+  addBlockTriangle(200, 300, 50, "0_1")
   addBlockCircle(295, 350, 20, "0_0")
-  addKillBox(400, 610, 810, 60)
+  addKillBox(400, 610, 10000, 60)
   addSpawner(300, 100, 20)
 
   Render.run(render);
@@ -119,7 +120,13 @@ const makePhysics = function () {
     console.log('mousedown at ' + mousePosition.x + ' ' + mousePosition.y);
 
     if (place == true) {
-      addBlock(mousePosition.x, mousePosition.y, 80, 80)
+      if (placeid == 0) {
+        addBlock(mousePosition.x, mousePosition.y, 80, 80)
+      } else if (placeid == 1) {
+        addBlockTriangle(mousePosition.x, mousePosition.y, 80, 80)
+      } else if (placeid == 2) {
+        addBlockCircle(mousePosition.x, mousePosition.y, 80, 80)
+      }
     } else if (remove == true) {
       let bodies = Query.point(Composite.allBodies(engine.world), mousePosition);
       if (bodies.length != 0) {
@@ -128,7 +135,9 @@ const makePhysics = function () {
     } else {
       let bodies = Query.point(Composite.allBodies(engine.world), mousePosition);
       if (bodies.length != 0) {
-        // DO EDITING OF BODY HERE
+        if (bodies[0].label != "spawner" || bodies[0].label != "entity" || bodies[0].label != "kill") {
+          editBlock = bodies[0]
+        }
       }
     }
   });
@@ -169,8 +178,8 @@ const addBlockCircle = function (x, y, radius, tag) {
   Composite.add(engine.world, [block]);
 }
 
-const addBlockTriangle = function (x, y, width, height, tag) {
-  let block = Bodies.polygon(x, y, width, height, { label: tag, isStatic: true })
+const addBlockTriangle = function (x, y, radius, tag) {
+  let block = Bodies.polygon(x, y, 3, radius, { label: tag, isStatic: true, angle: 3.1415 / 2 })
   block.collisionFilter = { category: 1, mask: 1, group: 0 };
   Composite.add(engine.world, [block]);
 }
@@ -178,6 +187,11 @@ const addBlockTriangle = function (x, y, width, height, tag) {
 const addKillBox = function (x, y, width, height) {
   let block = Bodies.rectangle(x, y, width, height, { label: "kill", isStatic: true })
   Composite.add(engine.world, [block]);
+}
+
+const editBlockStuff = function (instrumentID, pitchID, angle) {
+  editBlock.label = instrumentID + "_" + pitchID
+  editBlock.angle = angle
 }
 
 
