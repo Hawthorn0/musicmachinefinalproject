@@ -139,6 +139,11 @@ const makePhysics = function () {
       }
       editBlock = selected;
       updateInspector(selected);
+    } else if (activeTool === 'remove') {
+      let bodies = Query.point(Composite.allBodies(engine.world), mousePosition);
+      if (bodies.length != 0) {
+        Composite.remove(engine.world, bodies[0]);
+      }
     }
   });
 
