@@ -171,11 +171,11 @@ const makePhysics = async function () {
     console.log('mousedown at ' + mousePosition.x + ' ' + mousePosition.y);
 
     if (activeTool === 'rectangle') {
-      addBlock(mousePosition.x, mousePosition.y, 80, 80, '0_0');
+      addBlock(mousePosition.x, mousePosition.y, 40, 40, '0_0');
     } else if (activeTool === 'circle') {
-      addBlockCircle(mousePosition.x, mousePosition.y, 20, '0_0');
+      addBlockCircle(mousePosition.x, mousePosition.y, 25, '0_0');
     } else if (activeTool === 'triangle') {
-      addBlockTriangle(mousePosition.x, mousePosition.y, 3, 50, '0_0');
+      addBlockTriangle(mousePosition.x, mousePosition.y, 3, 30, '0_0');
     } else if(activeTool === 'spawner'){
       addSpawner(mousePosition.x, mousePosition.y, 20);
     }else if(activeTool === 'killbox'){
@@ -306,7 +306,7 @@ const loop = function () {
     let bodies = Composite.allBodies(engine.world);
     for (let i = 0; i < bodies.length; i++) {
       if (bodies[i].label == "spawner") {
-        addEntity(bodies[i].position.x, bodies[i].position.y, 30)
+        addEntity(bodies[i].position.x, bodies[i].position.y, 25)
       }
     }
   }
