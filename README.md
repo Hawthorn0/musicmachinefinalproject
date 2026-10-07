@@ -53,3 +53,5 @@ Think of 1,3, and 4 in particular in a similar vein to the design / tech achieve
 # pitch - 0-35 - editBlock.label = [instrumentID]_pitchID[] - wav file
 # angle - 0-360 editBlock.angle - (covert to radians)
 # change bpm
+
+

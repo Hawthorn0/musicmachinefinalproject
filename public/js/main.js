@@ -50,8 +50,62 @@ const playNote = function (intrumentID_noteID, volume) {
   });
 }
 
+const newId = function () {
+  return (crypto.randomUUID ? crypto.randomUUID() : Date.now() + '_' + Math.random());
+}
 
-const makePhysics = function () {
+const serializeBody = function(body){
+  return{
+    id: body.serverId,
+    shapeType: body.shapeType,
+    label: body.label,
+    x: body.position.x,
+    y: body.position.y,
+    angle: body.angle,
+    dims: body.dims
+  };
+}
+
+const saveBody = function (body, method) {
+  const url = method === 'POST' ? '/bodies' : '/bodies/' + body.serverId;
+  fetch(url, {
+    method: method,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(serializeBody(body))
+  }).catch(function (e) { console.error('saveBody failed', e); });
+}
+
+// added for future implementation
+const deleteBody = function(body){
+  Composite.remove(engine.world, body);
+  if (body.serverId) {
+    fetch('/bodies/' + body.serverId, { method: 'DELETE' })
+       .catch(function (e) { console.error('deleteBody failed', e); });
+  }
+}
+
+const loadBodies = async function () {
+  const res = await fetch('/bodies');
+  if (!res.ok) throw new Error('GET /bodies returned ' + res.status);
+  const list = await res.json();
+ 
+  for (const body of list) {
+    const d = body.dims || {};
+    let made = null;
+    if (body.shapeType === 'rectangle') made = addBlock(body.x, body.y, d.width, d.height, body.label, body.id, false);
+    else if (body.shapeType === 'circle') made = addBlockCircle(body.x, body.y, d.radius, body.label, body.id, false);
+    else if (body.shapeType === 'triangle') made = addBlockTriangle(body.x, body.y, body.sides, d.radius, body.label, body.id, false);
+    else if (body.shapeType === 'spawner') made = addSpawner(body.x, body.y, d.radius, body.id, false);
+    else if (body.shapeType === 'killbox') made = addKillBox(body.x, body.y, d.width, d.height, body.id, false);
+    if (made) Matter.Body.setAngle(made, body.angle);
+  }
+  return list.length;
+}
+
+
+
+
+const makePhysics = async function () {
   engine = Engine.create();
 
   render = Render.create({
@@ -61,19 +115,18 @@ const makePhysics = function () {
 
   // boxA = Bodies.rectangle(400, 200, 80, 80);
   // boxB = Bodies.rectangle(450, 50, 80, 80);
-  addBlock(400, 500, 80, 80, "0_0")
-  addBlock(450, 450, 80, 80, "0_2")
-  addBlock(200, 500, 80, 80, "0_1")
-  addBlockTriangle(200, 300, 3, 50, "0_1")
-  addBlockCircle(295, 350, 20, "0_0")
-  addKillBox(400, 610, 810, 60)
-  addSpawner(300, 100, 20)
+  //addBlock(400, 500, 80, 80, "0_0")
+  //addBlock(450, 450, 80, 80, "0_2")
+  //addBlock(200, 500, 80, 80, "0_1")
+ //addBlockTriangle(200, 300, 3, 50, "0_1")
+  //addBlockCircle(295, 350, 20, "0_0")
+  //addKillBox(400, 610, 810, 60)
+  //addSpawner(300, 100, 20)
 
-  Render.run(render);
-  runner = Runner.create();
-  Runner.run(runner, engine);
+  //Render.run(render);
+  //runner = Runner.create();
+  //Runner.run(runner, engine);  ** Moved to end of the script
 
-  addEntity(300, 300, 30)
 
   //https://github.com/liabru/matter-js/blob/master/examples/events.js
 
@@ -142,7 +195,7 @@ const makePhysics = function () {
     } else if (activeTool === 'remove') {
       let bodies = Query.point(Composite.allBodies(engine.world), mousePosition);
       if (bodies.length != 0) {
-        Composite.remove(engine.world, bodies[0]);
+        Composite.deleteBody(bodies[0]);
       }
     }
   });
@@ -159,49 +212,84 @@ const makePhysics = function () {
   Events.on(mouseConstraint, 'enddrag', function (event) {
     console.log('enddrag', event);
   });
+
+
+Render.run(render);
+runner = Runner.create();
+Runner.run(runner, engine);
+
+// error testing
+try {
+  const count = await loadBodies();
+  if (count === 0) addStarterBodies();
+} catch (e) {
+  console.error('loadBodies failed, using starter bodies instead', e);
+  addStarterBodies();
+  }
 }
 
-const addSpawner = function (x, y, radius) {
+const addSpawner = function (x, y, radius, id, save = true) {
   let block = Bodies.circle(x, y, radius, { label: "spawner", isStatic: true, isSensor: true })
   block.shapeType = 'spawner';
+  block.serverId = id || newId();
+  block.dims = { radius }
   Composite.add(engine.world, [block]);
+  if (save) saveBody(block, 'POST');
+  return block;
 }
 
-const addEntity = function (x, y, radius) {
+const addEntity = function (x, y, radius,) {
+  // no serverside... I assume these are temp
   let block = Bodies.circle(x, y, radius, { label: "entity" })
   Composite.add(engine.world, [block]);
 }
 
-const addBlock = function (x, y, width, height, tag) {
+const addBlock = function (x, y, width, height, tag, id, save = true) {
   let block = Bodies.rectangle(x, y, width, height, { label: tag, isStatic: true })
   block.shapeType = 'rectangle';
+  block.serverId = id || newId();
+  block.dims = { width, height };
   block.collisionFilter = { category: 1, mask: 1, group: 0 };
   Composite.add(engine.world, [block]);
+  if (save) saveBody(block, 'POST');
 }
 
-const addBlockCircle = function (x, y, radius, tag) {
+const addBlockCircle = function (x, y, radius, tag, id, save = true) {
   let block = Bodies.circle(x, y, radius, { label: tag, isStatic: true })
   block.shapeType = 'circle';
+  block.serverId = id || newId();
+  block.dims = { radius };
   block.collisionFilter = { category: 1, mask: 1, group: 0 };
   Composite.add(engine.world, [block]);
+  if (save) saveBody(block, 'POST');
+  return block;
 }
 
-const addBlockTriangle = function (x, y, sides, radius, tag) {
+const addBlockTriangle = function (x, y, sides, radius, tag, id, save = true) {
   let block = Bodies.polygon(x, y, sides, radius, { label: tag, isStatic: true, angle: Math.PI / 2 })
   block.shapeType = 'triangle';
+  block.serverId = id || newId();
+  block.dims = { sides, radius };
   block.collisionFilter = { category: 1, mask: 1, group: 0 };
   Composite.add(engine.world, [block]);
+  if (save) saveBody(block, 'POST');
+  return block;
 }
 
-const addKillBox = function (x, y, width, height) {
+const addKillBox = function (x, y, width, height, id, save = true) {
   let block = Bodies.rectangle(x, y, width, height, { label: "kill", isStatic: true })
   block.shapeType = 'killbox';
+  block.serverId = id || newId();
+  block.dims = { width, height };
   Composite.add(engine.world, [block]);
+  if (save) saveBody(block, 'POST');
+  return block;
 }
 
 const editBlockStuff = function (instrumentID, pitchID, angle) {
   editBlock.label = instrumentID + "_" + pitchID
-  editBlock.angle = angle
+  editBlock.angle = Matter.Body.setAngle(editBlock, angle)
+  saveBody(editBlock, 'PUT');
 }
 
 
@@ -209,7 +297,7 @@ const editBlockStuff = function (instrumentID, pitchID, angle) {
 const loop = function () {
   // temporal recursion, call tthe function in the future
   window.requestAnimationFrame(loop)
-
+  if(!engine) return 
   tick++
   if (tick > bpm) {
     console.log(tick)
