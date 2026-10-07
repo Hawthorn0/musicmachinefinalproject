@@ -225,27 +225,34 @@ const loop = function () {
 }
 
 function updateInspector(body) {
-  var instrumentValue = document.querySelector('#instrument-value');
-  var pitchValue = document.querySelector('#pitch-value');
-  var angleValue = document.querySelector('#angle-value');
-  var hint = document.querySelector('.inspector .hint');
+  var instrumentInput = document.querySelector('#instrument-input');
+  var pitchInput = document.querySelector('#pitch-input');
+  var angleInput = document.querySelector('#angle-input');
 
-  instrumentValue.textContent = '—';
-  pitchValue.textContent = '—';
-  angleValue.textContent = '—';
+  instrumentInput.disabled = true;
+  pitchInput.disabled = true;
+  angleInput.disabled = true;
 
-  if (body == null) {
-    hint.hidden = false;
-    return;
+  instrumentInput.value = '';
+  pitchInput.value = '';
+  angleInput.value = '';
+
+
+  if (body == null) return;
+
+  var degrees = Math.round(body.angle * 180 / Math.PI);
+  if (degrees < 0 || degrees > 360) {
+    degrees = ((degrees % 360) + 360) % 360;
   }
+  angleInput.value = degrees;
+  angleInput.disabled = body.shapeType === 'spawner';
 
-  hint.hidden = true;
-  angleValue.textContent = Math.round(body.angle * 180 / Math.PI) + '°';
-
-  if (body.label.indexOf('_') != -1) {
-    var labelParts = body.label.split('_');
-    instrumentValue.textContent = labelParts[0];
-    pitchValue.textContent = labelParts[1];
+  if (body.label.includes('_')) {
+    var parts = body.label.split('_');
+    instrumentInput.value = parts[0];
+    pitchInput.value = parts[1];
+    instrumentInput.disabled = false;
+    pitchInput.disabled = false;
   }
 }
 
@@ -265,6 +272,42 @@ window.onload = function () {
         }}
     });
   }
+
+  var instrumentInput = document.querySelector('#instrument-input');
+  var pitchInput = document.querySelector('#pitch-input');
+  var angleInput = document.querySelector('#angle-input');
+
+  for (var pitch = 0; pitch <= 36; pitch++) {
+    var pitchOption = document.createElement('option');
+    pitchOption.value = pitch;
+    pitchOption.textContent = pitch;
+    pitchInput.appendChild(pitchOption);
+  }
+
+  for (var angle = 0; angle <= 360; angle++) {
+    var angleOption = document.createElement('option');
+    angleOption.value = angle;
+    angleOption.textContent = angle + '°';
+    angleInput.appendChild(angleOption);
+  }
+
+  function updateSound() {
+    if(editBlock== null) return;
+    if(!instrumentInput.checkValidity()) return;
+    if(!pitchInput.checkValidity()) return;
+
+    editBlock.label = instrumentInput.value + '_' + pitchInput.value;
+    }
+  instrumentInput.addEventListener('change', updateSound);
+  pitchInput.addEventListener('change', updateSound);
+
+  angleInput.addEventListener('change', function() {
+    if (editBlock == null) return;
+    if (!angleInput.checkValidity()) return;
+
+    var radians = Number(angleInput.value) * Math.PI / 180;
+    Matter.Body.setAngle(editBlock, radians);
+  });
 
   makePhysics()
   loop()

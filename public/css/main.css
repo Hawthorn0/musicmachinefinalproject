@@ -97,6 +97,18 @@ body {
     margin-top: 20px;
 }
 
+
+.inspector label {
+    display: block;
+    margin-top: 16px;
+}
+
+.inspector select {
+    width: 100%;
+    margin-top: 6px;
+    padding: 8px;
+}
+
 .inspector dl div {
     display: flex;
     justify-content: space-between;
