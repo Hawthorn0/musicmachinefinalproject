@@ -76,6 +76,7 @@ const saveBody = function (body, method) {
   }).catch(function (e) { console.error('saveBody failed', e); });
 }
 
+// added for future implementation
 const deleteBody = function(body){
   Composite.remove(engine.world, body);
   if (body.serverId) {
@@ -203,13 +204,8 @@ const makePhysics = async function () {
       updateInspector(selected);
     } else if (activeTool === 'remove') {
       let bodies = Query.point(Composite.allBodies(engine.world), mousePosition);
-      let body = bodies.find(function (candidate) { return candidate.shapeType; });
-      if (body) {
-        deleteBody(body);
-        if (editBlock === body) {
-          editBlock = null;
-          updateInspector(null);
-        }
+      if (bodies.length != 0) {
+        Composite.deleteBody(bodies[0]);
       }
     }
   });
