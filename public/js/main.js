@@ -25,7 +25,6 @@ let runner
 let editBlock
 let activeTool = 'select';
 
-let isPlaying = false;
 let bpm = 120
 let tick = 0
 
@@ -103,16 +102,6 @@ const loadBodies = async function () {
   return list.length;
 }
 
-const addStarterBodies = function () {
-  addBlock(400, 500, 80, 80, "0_0");
-  addBlock(450, 450, 80, 80, "0_2");
-  addBlock(200, 500, 80, 80, "0_1");
-  addBlockTriangle(200, 300, 3, 50, "0_1");
-  addBlockCircle(295, 350, 20, "0_0");
-  addKillBox(400, 610, 810, 60);
-  addSpawner(300, 100, 20);
-}
-
 
 
 
@@ -137,6 +126,7 @@ const makePhysics = async function () {
   //Render.run(render);
   //runner = Runner.create();
   //Runner.run(runner, engine);  ** Moved to end of the script
+
 
   //https://github.com/liabru/matter-js/blob/master/examples/events.js
 
@@ -307,7 +297,7 @@ const editBlockStuff = function (instrumentID, pitchID, angle) {
 const loop = function () {
   // temporal recursion, call tthe function in the future
   window.requestAnimationFrame(loop)
-  if (!engine || !isPlaying) return;
+  if(!engine) return 
   tick++
   if (tick > bpm) {
     console.log(tick)
@@ -405,12 +395,6 @@ window.onload = function () {
 
     var radians = Number(angleInput.value) * Math.PI / 180;
     Matter.Body.setAngle(editBlock, radians);
-  });
-
-  document.querySelector('#start-button').addEventListener('click', () => {
-    document.querySelector('#start-screen').remove();
-    tick = bpm;
-    isPlaying = true;
   });
 
   makePhysics()
