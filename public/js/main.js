@@ -31,16 +31,16 @@ let tick = 0
 
 // base hue (0 – 360)
 const INSTRUMENT_HUES = {
-  0: 40,   // Piano  → warm yellow/orange
-  1: 200,  // e.g. Bass → cyan/blue
-  2: 280,  // e.g. Synth → purple
-  3: 120,  // e.g. Guitar → green
+  0: 40,   
+  1: 200,  
+  2: 280,  
+  3: 120,  
 };
 
 // pitch 0 – 36 -> saturation 30% – 95%
 function pitchToSaturation(pitch) {
   const p = Math.max(0, Math.min(36, Number(pitch) || 0));
-  return 30 + (p / 36) * 65; // 30 → 95
+  return 30 + (p / 36) * 65; 
 }
 
 function getColorForLabel(label) {
