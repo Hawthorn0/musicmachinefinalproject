@@ -9,7 +9,12 @@
 </head>
 
 <body>
-    <header class="app-header">
+  <div id="start-screen">
+      <h2>Music Machine</h2>
+      <p>Click start to play some music</p>
+    <button id="start-button" type="button">Start</button>
+  </div>
+  <header class="app-header">
       <h1>Music Machine</h1>
   </header>
   <main class="workspace">
@@ -22,6 +27,7 @@
       <button type= "button" data-shape="triangle" aria-pressed="false">Triangle</button>
       <button type = "button" data-shape= "spawner" aria-pressed="false"> Spawner</button>
       <button type= "button" data-shape="killbox" aria-pressed="false">Kill box</button>
+      <button type="button" data-shape="remove" aria-pressed="false">Remove</button>
     </aside>
 
     <section class="canvas-panel" aria-label="Music machine canvas">

@@ -25,6 +25,7 @@ let runner
 let editBlock
 let activeTool = 'select';
 
+let isPlaying = false;
 let bpm = 120
 let tick = 0
 
@@ -127,7 +128,7 @@ const makePhysics = async function () {
   //addBlock(200, 500, 80, 80, "0_1")
  //addBlockTriangle(200, 300, 3, 50, "0_1")
   //addBlockCircle(295, 350, 20, "0_0")
-  //addKillBox(400, 610, 810, 60)
+  addKillBox(400, 610, 810, 60)
   //addSpawner(300, 100, 20)
 
   //Render.run(render);
@@ -178,11 +179,11 @@ const makePhysics = async function () {
     console.log('mousedown at ' + mousePosition.x + ' ' + mousePosition.y);
 
     if (activeTool === 'rectangle') {
-      addBlock(mousePosition.x, mousePosition.y, 80, 80, '0_0');
+      addBlock(mousePosition.x, mousePosition.y, 40, 40, '0_0');
     } else if (activeTool === 'circle') {
-      addBlockCircle(mousePosition.x, mousePosition.y, 20, '0_0');
+      addBlockCircle(mousePosition.x, mousePosition.y, 25, '0_0');
     } else if (activeTool === 'triangle') {
-      addBlockTriangle(mousePosition.x, mousePosition.y, 3, 50, '0_0');
+      addBlockTriangle(mousePosition.x, mousePosition.y, 3, 30, '0_0');
     } else if(activeTool === 'spawner'){
       addSpawner(mousePosition.x, mousePosition.y, 20);
     }else if(activeTool === 'killbox'){
@@ -201,8 +202,13 @@ const makePhysics = async function () {
       updateInspector(selected);
     } else if (activeTool === 'remove') {
       let bodies = Query.point(Composite.allBodies(engine.world), mousePosition);
-      if (bodies.length != 0) {
-        Composite.deleteBody(bodies[0]);
+      let body = bodies.find(function (candidate) { return candidate.shapeType; });
+      if (body) {
+        deleteBody(body);
+        if (editBlock === body) {
+          editBlock = null;
+          updateInspector(null);
+        }
       }
     }
   });
@@ -364,7 +370,7 @@ const editBlockStuff = function (instrumentID, pitchID, angle) {
 const loop = function () {
   // temporal recursion, call tthe function in the future
   window.requestAnimationFrame(loop)
-  if(!engine) return 
+  if (!engine || !isPlaying) return;
   tick++
   if (tick > bpm) {
     console.log(tick)
@@ -373,7 +379,7 @@ const loop = function () {
     let bodies = Composite.allBodies(engine.world);
     for (let i = 0; i < bodies.length; i++) {
       if (bodies[i].label == "spawner") {
-        addEntity(bodies[i].position.x, bodies[i].position.y, 30)
+        addEntity(bodies[i].position.x, bodies[i].position.y, 25)
       }
     }
   }
@@ -464,6 +470,13 @@ window.onload = function () {
     Matter.Body.setAngle(editBlock, radians);
   });
 
+
+
+  document.querySelector('#start-button').addEventListener('click', () => {
+    document.querySelector('#start-screen').remove();
+    tick = bpm;
+    isPlaying = true;
+  });
 
   makePhysics()
   loop()
