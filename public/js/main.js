@@ -1,6 +1,5 @@
 // FRONT-END (CLIENT) JAVASCRIPT HERE
 
-
 import { Howl } from 'https://cdn.jsdelivr.net/npm/howler@2.2.4/+esm';
 import Matter from 'https://cdn.jsdelivr.net/npm/matter-js@0.20.0/+esm'
 
@@ -28,6 +27,35 @@ let activeTool = 'select';
 let isPlaying = false;
 let bpm = 120
 let tick = 0
+
+
+// base hue (0 – 360)
+const INSTRUMENT_HUES = {
+  0: 40,   // Piano  → warm yellow/orange
+  1: 200,  // e.g. Bass → cyan/blue
+  2: 280,  // e.g. Synth → purple
+  3: 120,  // e.g. Guitar → green
+};
+
+// pitch 0 – 36 -> saturation 30% – 95%
+function pitchToSaturation(pitch) {
+  const p = Math.max(0, Math.min(36, Number(pitch) || 0));
+  return 30 + (p / 36) * 65; // 30 → 95
+}
+
+function getColorForLabel(label) {
+  if (!label || !label.includes('_')) return '#ffce73'; // fallback
+
+  const [instStr, pitchStr] = label.split('_');
+  const inst = Number(instStr);
+  const pitch = Number(pitchStr);
+
+  const hue = INSTRUMENT_HUES[inst] ?? 40;
+  const sat = pitchToSaturation(pitch);
+  const light = 65; 
+
+  return `hsl(${hue}, ${sat}%, ${light}%)`;
+}
 
 
 const message = function (what) {
@@ -94,9 +122,9 @@ const loadBodies = async function () {
   for (const body of list) {
     const d = body.dims || {};
     let made = null;
-    if (body.shapeType === 'rectangle') made = addBlock(body.x, body.y, d.width, d.height, body.label, body.id, false, body.colorset?.fill || '#ffce73');
-    else if (body.shapeType === 'circle') made = addBlockCircle(body.x, body.y, d.radius, body.label, body.id, false, body.colorset?.fill || '#78c9ff');
-    else if (body.shapeType === 'triangle') made = addBlockTriangle(body.x, body.y, d.sides, d.radius, body.label, body.id, false, body.colorset?.fill || '#c4a4ff');
+    if (body.shapeType === 'rectangle') made = addBlock(body.x, body.y, d.width, d.height, body.label, body.id, false, body.colorset?.fill || getColorForLabel(body.label));
+    else if (body.shapeType === 'circle') made = addBlockCircle(body.x, body.y, d.radius, body.label, body.id, false, body.colorset?.fill || getColorForLabel(body.label));
+    else if (body.shapeType === 'triangle') made = addBlockTriangle(body.x, body.y, body.sides, d.radius, body.label, body.id, false, body.colorset?.fill || getColorForLabel(body.label));
     else if (body.shapeType === 'spawner') made = addSpawner(body.x, body.y, d.radius, body.id, false, body.colorset?.fill || '#68d7ae');
     else if (body.shapeType === 'killbox') made = addKillBox(body.x, body.y, d.width, d.height, body.id, false, body.colorset?.fill || '#ff8b95');
     if (made) Matter.Body.setAngle(made, body.angle);
@@ -276,7 +304,9 @@ const addEntity = function (x, y, radius, ) {
   Composite.add(engine.world, [block]);
 }
 
-const addBlock = function (x, y, width, height, tag, id, save = true, color = '#ffce73') {
+const addBlock = function (x, y, width, height, tag, id, save = true, color) {
+  color = color || getColorForLabel(tag);
+
   let block = Bodies.rectangle(x, y, width, height, { 
     label: tag, 
     isStatic: true, 
@@ -294,9 +324,12 @@ const addBlock = function (x, y, width, height, tag, id, save = true, color = '#
   block.collisionFilter = { category: 1, mask: 1, group: 0 };
   Composite.add(engine.world, [block]);
   if (save) saveBody(block, 'POST');
+  return block;
 }
 
-const addBlockCircle = function (x, y, radius, tag, id, save = true, color = '#78c9ff') {
+const addBlockCircle = function (x, y, radius, tag, id, save = true, color) {
+  color = color || getColorForLabel(tag);
+
   let block = Bodies.circle(x, y, radius, { 
     label: tag, 
     isStatic: true,
@@ -317,7 +350,9 @@ const addBlockCircle = function (x, y, radius, tag, id, save = true, color = '#7
   return block;
 }
 
-const addBlockTriangle = function (x, y, sides, radius, tag, id, save = true, color = '#c4a4ff') {
+const addBlockTriangle = function (x, y, sides, radius, tag, id, save = true, color) {
+  color = color || getColorForLabel(tag);
+
   let block = Bodies.polygon(x, y, sides, radius, { 
     label: tag, 
     isStatic: true, 
@@ -453,12 +488,20 @@ window.onload = function () {
   }
 
   function updateSound() {
-    if(editBlock== null) return;
-    if(!instrumentInput.checkValidity()) return;
-    if(!pitchInput.checkValidity()) return;
+    if (editBlock == null) return;
+    if (!instrumentInput.checkValidity()) return;
+    if (!pitchInput.checkValidity()) return;
 
-    editBlock.label = instrumentInput.value + '_' + pitchInput.value;
-    }
+    const newLabel = instrumentInput.value + '_' + pitchInput.value;
+    editBlock.label = newLabel;
+
+    // update color based on instrument + pitch
+    const newColor = getColorForLabel(newLabel);
+    editBlock.render.fillStyle = newColor;
+    editBlock.colorset = { fill: newColor };
+
+    saveBody(editBlock, 'PUT');
+  }
   instrumentInput.addEventListener('change', updateSound);
   pitchInput.addEventListener('change', updateSound);
 
@@ -468,6 +511,7 @@ window.onload = function () {
 
     var radians = Number(angleInput.value) * Math.PI / 180;
     Matter.Body.setAngle(editBlock, radians);
+    saveBody(editBlock, 'PUT');
   });
 
 
