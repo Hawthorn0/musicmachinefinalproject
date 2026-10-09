@@ -62,7 +62,8 @@ const serializeBody = function(body){
     x: body.position.x,
     y: body.position.y,
     angle: body.angle,
-    dims: body.dims
+    dims: body.dims,
+    colorset: body.colorset || { fill: body.render?.fillStyle }
   };
 }
 
@@ -92,11 +93,11 @@ const loadBodies = async function () {
   for (const body of list) {
     const d = body.dims || {};
     let made = null;
-    if (body.shapeType === 'rectangle') made = addBlock(body.x, body.y, d.width, d.height, body.label, body.id, false);
-    else if (body.shapeType === 'circle') made = addBlockCircle(body.x, body.y, d.radius, body.label, body.id, false);
-    else if (body.shapeType === 'triangle') made = addBlockTriangle(body.x, body.y, body.sides, d.radius, body.label, body.id, false);
-    else if (body.shapeType === 'spawner') made = addSpawner(body.x, body.y, d.radius, body.id, false);
-    else if (body.shapeType === 'killbox') made = addKillBox(body.x, body.y, d.width, d.height, body.id, false);
+    if (body.shapeType === 'rectangle') made = addBlock(body.x, body.y, d.width, d.height, body.label, body.id, false, body.colorset?.fill || '#ffce73');
+    else if (body.shapeType === 'circle') made = addBlockCircle(body.x, body.y, d.radius, body.label, body.id, false, body.colorset?.fill || '#78c9ff');
+    else if (body.shapeType === 'triangle') made = addBlockTriangle(body.x, body.y, body.sides, d.radius, body.label, body.id, false, body.colorset?.fill || '#c4a4ff');
+    else if (body.shapeType === 'spawner') made = addSpawner(body.x, body.y, d.radius, body.id, false, body.colorset?.fill || '#68d7ae');
+    else if (body.shapeType === 'killbox') made = addKillBox(body.x, body.y, d.width, d.height, body.id, false, body.colorset?.fill || '#ff8b95');
     if (made) Matter.Body.setAngle(made, body.angle);
   }
   return list.length;
@@ -111,6 +112,12 @@ const makePhysics = async function () {
   render = Render.create({
     element: document.querySelector('#canvas-stage'),
     engine: engine,
+    options: {
+      width: 800,
+      height: 600,
+      wireframes: false,
+      background: '#14151f'
+    }
   });
 
   // boxA = Bodies.rectangle(400, 200, 80, 80);
@@ -228,59 +235,119 @@ try {
   }
 }
 
-const addSpawner = function (x, y, radius, id, save = true) {
-  let block = Bodies.circle(x, y, radius, { label: "spawner", isStatic: true, isSensor: true })
+const addSpawner = function (x, y, radius, id, save = true, color = '#68d7ae') {
+  let block = Bodies.circle(x, y, radius, { 
+    label: "spawner", 
+    isStatic: true, 
+    isSensor: true,
+    render: {
+      fillStyle: color,          // main color
+      strokeStyle: '#222',     // outline 
+      lineWidth: 2,              // outline thickness
+      opacity: 1                 // 0–1
+    }
+  })
   block.shapeType = 'spawner';
   block.serverId = id || newId();
-  block.dims = { radius }
+  block.dims = { radius };
+  block.colorset = { fill: color };
   Composite.add(engine.world, [block]);
   if (save) saveBody(block, 'POST');
   return block;
 }
 
-const addEntity = function (x, y, radius,) {
+const addEntity = function (x, y, radius, ) {
   // no serverside... I assume these are temp
-  let block = Bodies.circle(x, y, radius, { label: "entity" })
+  let block = Bodies.circle(x, y, radius, { 
+    label: "entity", 
+    render: {
+      fillStyle: '#c6f2f1',          // main color
+      strokeStyle: '#222',     // outline 
+      lineWidth: 2,              // outline thickness
+      opacity: 0.5                 // 0–1
+    } 
+  })
   Composite.add(engine.world, [block]);
 }
 
-const addBlock = function (x, y, width, height, tag, id, save = true) {
-  let block = Bodies.rectangle(x, y, width, height, { label: tag, isStatic: true })
+const addBlock = function (x, y, width, height, tag, id, save = true, color = '#ffce73') {
+  let block = Bodies.rectangle(x, y, width, height, { 
+    label: tag, 
+    isStatic: true, 
+    render: {
+      fillStyle: color,          // main color
+      strokeStyle: '#222',     // outline 
+      lineWidth: 2,              // outline thickness
+      opacity: 1                 // 0–1
+    } 
+  })
   block.shapeType = 'rectangle';
   block.serverId = id || newId();
   block.dims = { width, height };
+  block.colorset = { fill: color };
   block.collisionFilter = { category: 1, mask: 1, group: 0 };
   Composite.add(engine.world, [block]);
   if (save) saveBody(block, 'POST');
 }
 
-const addBlockCircle = function (x, y, radius, tag, id, save = true) {
-  let block = Bodies.circle(x, y, radius, { label: tag, isStatic: true })
+const addBlockCircle = function (x, y, radius, tag, id, save = true, color = '#78c9ff') {
+  let block = Bodies.circle(x, y, radius, { 
+    label: tag, 
+    isStatic: true,
+    render: {
+      fillStyle: color,          // main color
+      strokeStyle: '#222',     // outline 
+      lineWidth: 2,              // outline thickness
+      opacity: 1                 // 0–1
+    }  
+  })
   block.shapeType = 'circle';
   block.serverId = id || newId();
   block.dims = { radius };
+  block.colorset = { fill: color };
   block.collisionFilter = { category: 1, mask: 1, group: 0 };
   Composite.add(engine.world, [block]);
   if (save) saveBody(block, 'POST');
   return block;
 }
 
-const addBlockTriangle = function (x, y, sides, radius, tag, id, save = true) {
-  let block = Bodies.polygon(x, y, sides, radius, { label: tag, isStatic: true, angle: Math.PI / 2 })
+const addBlockTriangle = function (x, y, sides, radius, tag, id, save = true, color = '#c4a4ff') {
+  let block = Bodies.polygon(x, y, sides, radius, { 
+    label: tag, 
+    isStatic: true, 
+    angle: Math.PI / 2,
+    render: {
+      fillStyle: color,          // main color
+      strokeStyle: '#222',     // outline 
+      lineWidth: 2,              // outline thickness
+      opacity: 1                 // 0–1
+    }  
+   })
   block.shapeType = 'triangle';
   block.serverId = id || newId();
   block.dims = { sides, radius };
+  block.colorset = { fill: color };
   block.collisionFilter = { category: 1, mask: 1, group: 0 };
   Composite.add(engine.world, [block]);
   if (save) saveBody(block, 'POST');
   return block;
 }
 
-const addKillBox = function (x, y, width, height, id, save = true) {
-  let block = Bodies.rectangle(x, y, width, height, { label: "kill", isStatic: true })
+const addKillBox = function (x, y, width, height, id, save = true, color = '#ff8b95') {
+  let block = Bodies.rectangle(x, y, width, height, { 
+    label: "kill", 
+    isStatic: true,
+    render: {
+      fillStyle: color,          // main color
+      strokeStyle: '#222',     // outline 
+      lineWidth: 0,              // outline thickness
+      opacity: 0.5                 // 0–1
+    }
+   })
   block.shapeType = 'killbox';
   block.serverId = id || newId();
   block.dims = { width, height };
+  block.colorset = { fill: color };
   Composite.add(engine.world, [block]);
   if (save) saveBody(block, 'POST');
   return block;
@@ -397,8 +464,10 @@ window.onload = function () {
     Matter.Body.setAngle(editBlock, radians);
   });
 
+
   makePhysics()
   loop()
 
 
 }
+
