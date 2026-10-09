@@ -96,7 +96,7 @@ const loadBodies = async function () {
     let made = null;
     if (body.shapeType === 'rectangle') made = addBlock(body.x, body.y, d.width, d.height, body.label, body.id, false, body.colorset?.fill || '#ffce73');
     else if (body.shapeType === 'circle') made = addBlockCircle(body.x, body.y, d.radius, body.label, body.id, false, body.colorset?.fill || '#78c9ff');
-    else if (body.shapeType === 'triangle') made = addBlockTriangle(body.x, body.y, body.sides, d.radius, body.label, body.id, false, body.colorset?.fill || '#c4a4ff');
+    else if (body.shapeType === 'triangle') made = addBlockTriangle(body.x, body.y, d.sides, d.radius, body.label, body.id, false, body.colorset?.fill || '#c4a4ff');
     else if (body.shapeType === 'spawner') made = addSpawner(body.x, body.y, d.radius, body.id, false, body.colorset?.fill || '#68d7ae');
     else if (body.shapeType === 'killbox') made = addKillBox(body.x, body.y, d.width, d.height, body.id, false, body.colorset?.fill || '#ff8b95');
     if (made) Matter.Body.setAngle(made, body.angle);
