@@ -22,15 +22,19 @@ We used matter.js, howler, and express for the project. Matter.js was used for t
 
 (Jonathan) The hardest part for me was making sure that the Render functionality in Matter.js worked properly during testing and deployment. The Render functionality is capable for small-scale, basic graphics rendering. I was originally going to have other effects shown on the spawned entities, however I had decided to abandon the concept due to needing a different graphics framework to implement everything properly. One of the issues that took up the most time for me is the fact that wireframes for rendered shapes are turned on by default in Matter.js. If wireframes are on, any color changes made will not be visible. I used HTTP server hosting to test the rendered shapes, which requires fully shutting down the server and reopening it on a separate window to load any changes done.
 
+(Jonah) The first challenge i encountered was Keeping the physics world after a refresh. Matter.js runs in the browser, so every refresh wiped the world. I added a small Express server that stores a plain-data copy of each shape (type, position, size, angle and note) and sends it back when the page loads. The server never runs any physics. It only remembers, and main.js rebuilds the real bodies from that data. I also encountered duplicate spawners from failed loads. When loading from the server failed, the fallback starter shapes were saved as new shapes each time, and the spawners piled up and flooded the screen with balls. Fallback shapes are now created without being saved, and the world is reset when the server starts.
+
 5. What each group member was responsible for designing / developing.
    
 (Hawthorn) I was responsible for implementing the physics and all the logic that comes with it, the audio logic with it's .wav files, and also just being an ideas guy. 
 
 (Jonathan) I implemented the graphics for the music machine. This includes the colors of each part that is interacted with on the canvas.
 
+(Jonah) I built the server side of the project: an Express server.js that stores each shape and saves it to a file, with routes to add, update, delete and list shapes. I also wrote the code in main.js that sends every change to the server and rebuilds the physics world from it on refresh, so the user’s world is still there after reloading
+
 6. A link to your project video.
    
-https://drive.google.com/file/d/1NRwKcaXLsX9n9Zb2t1oxwnFMa7r7cf-3/view?usp=sharing
+https://drive.google.com/file/d/1xqocHn1FakkUDo3kV0Us0dWcZuoXrtid/view?usp=drive_link
 
 
 
