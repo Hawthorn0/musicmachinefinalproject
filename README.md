@@ -35,6 +35,7 @@ We used matter.js, howler, and express for the project. Matter.js was used for t
 (Jonah) I built the server side of the project: an Express server.js that stores each shape and saves it to a file, with routes to add, update, delete and list shapes. I also wrote the code in main.js that sends every change to the server and rebuilds the physics world from it on refresh, so the user’s world is still there after reloading
 
 (Jacob) I added the ui to the music machine. including the start screen, and the buttons on the left bar menu, as well as the right bar menu where you can adjust and choose the instrument type, pitch and angle of a block.
+
 6. A link to your project video.
    
 https://drive.google.com/file/d/1CgCOeruGx6pWHc-YdjFWDoqt9ob7OdE7/view?usp=drive_link
