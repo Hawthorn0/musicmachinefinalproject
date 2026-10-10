@@ -24,6 +24,8 @@ We used matter.js, howler, and express for the project. Matter.js was used for t
 
 (Jonah) The first challenge i encountered was Keeping the physics world after a refresh. Matter.js runs in the browser, so every refresh wiped the world. I added a small Express server that stores a plain-data copy of each shape (type, position, size, angle and note) and sends it back when the page loads. The server never runs any physics. It only remembers, and main.js rebuilds the real bodies from that data. I also encountered duplicate spawners from failed loads. When loading from the server failed, the fallback starter shapes were saved as new shapes each time, and the spawners piled up and flooded the screen with balls. Fallback shapes are now created without being saved, and the world is reset when the server starts.
 
+(Jacob) I faced a challenge with connecting the ui to the rest of the phyiscs and the machine. I machine kept breaking when I was implementing my code, after some debugging and teamwork, i was able to work around the difficulties.
+
 5. What each group member was responsible for designing / developing.
    
 (Hawthorn) I was responsible for implementing the physics and all the logic that comes with it, the audio logic with it's .wav files, and also just being an ideas guy. 
@@ -32,6 +34,7 @@ We used matter.js, howler, and express for the project. Matter.js was used for t
 
 (Jonah) I built the server side of the project: an Express server.js that stores each shape and saves it to a file, with routes to add, update, delete and list shapes. I also wrote the code in main.js that sends every change to the server and rebuilds the physics world from it on refresh, so the user’s world is still there after reloading
 
+(Jacob) I added the ui to the music machine. including the start screen, and the buttons on the left bar menu, as well as the right bar menu where you can adjust and choose the instrument type, pitch and angle of a block.
 6. A link to your project video.
    
 https://drive.google.com/file/d/1CgCOeruGx6pWHc-YdjFWDoqt9ob7OdE7/view?usp=drive_link
